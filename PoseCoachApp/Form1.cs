@@ -24,7 +24,7 @@ public partial class Form1 : Form
         // Initialize the timer
         _captureTimer = new Timer
         {
-            Interval = 120000 // 60,000 ms = 1 minute
+            Interval = 600000 // 60,000 ms = 1 minute
         };
         _captureTimer.Start();
         _captureTimer.Tick += CaptureTimer_Tick;
@@ -64,7 +64,6 @@ public partial class Form1 : Form
         // Start the webcam feed
         _videoSource.Start();
         
-        if(pictureBox1.Image == null) return;
     }
 
 
