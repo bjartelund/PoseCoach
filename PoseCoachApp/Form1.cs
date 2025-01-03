@@ -71,7 +71,7 @@ public partial class Form1 : Form
     private async void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
         // Get the current frame and display it in the PictureBox
-        var bitmap = (Bitmap)eventArgs.Frame.Clone();
+        using var bitmap = (Bitmap)eventArgs.Frame.Clone();
         pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
 
         pictureBox1.Image = bitmap;
@@ -79,7 +79,8 @@ public partial class Form1 : Form
         if (!_isWaitingForResponse)
         {
             _isWaitingForResponse = true;
-            textBox1.Text = await _coach.GetPoseEvaluation((Bitmap)pictureBox1.Image);
+            using var poseBitmap = (Bitmap)eventArgs.Frame.Clone();
+            textBox1.Text = await _coach.GetPoseEvaluation(poseBitmap);
             _isWaitingForResponse = false;
         }
         
