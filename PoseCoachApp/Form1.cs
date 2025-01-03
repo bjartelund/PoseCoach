@@ -9,6 +9,7 @@ public partial class Form1 : Form
     private VideoCaptureDevice _videoSource;
     private Timer _captureTimer; // Timer for timed captures
     private readonly ICoach _coach;
+    private bool _isWaitingForResponse;
 
     public Form1(ICoach coach)
     {
@@ -52,7 +53,7 @@ public partial class Form1 : Form
         }
 
         // Select the first available webcam
-        _videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
+        _videoSource = new VideoCaptureDevice(videoDevices[^1].MonikerString);
         _videoSource.VideoResolution = _videoSource.VideoCapabilities
             .FirstOrDefault(res => res.FrameSize is { Width: 640, Height: 480 });
 
@@ -74,8 +75,14 @@ public partial class Form1 : Form
         pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
 
         pictureBox1.Image = bitmap;
+
+        if (!_isWaitingForResponse)
+        {
+            _isWaitingForResponse = true;
+            textBox1.Text = await _coach.GetPoseEvaluation((Bitmap)pictureBox1.Image);
+            _isWaitingForResponse = false;
+        }
         
-        textBox1.Text = await _coach.GetPoseEvaluation((Bitmap)pictureBox1.Image);
 
 
         _videoSource.NewFrame -= VideoSource_NewFrame;
