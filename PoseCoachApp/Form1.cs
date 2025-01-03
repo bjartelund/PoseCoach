@@ -8,7 +8,7 @@ public partial class Form1 : Form
 {
     private VideoCaptureDevice _videoSource;
     private Timer _captureTimer; // Timer for timed captures
-    private ICoach _coach;
+    private readonly ICoach _coach;
 
     public Form1(ICoach coach)
     {
@@ -23,31 +23,31 @@ public partial class Form1 : Form
         // Initialize the timer
         _captureTimer = new Timer
         {
-            Interval = 12000 // 60,000 ms = 1 minute
+            Interval = 120000 // 60,000 ms = 1 minute
         };
         _captureTimer.Start();
         _captureTimer.Tick += CaptureTimer_Tick;
-        Capture();
+        CaptureFrame();
     }
 
 
     private void CaptureTimer_Tick(object? sender, EventArgs e)
     {
-        Capture();
+        CaptureFrame();
     }
 
     private void pictureBox1_Click(object sender, EventArgs e)
     {
         // Get the list of video devices (webcams)
-        Capture();
+        CaptureFrame();
     }
 
-    private async void Capture()
+    private void CaptureFrame()
     {
         var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
         if (videoDevices.Count == 0)
         {
-            MessageBox.Show("No video devices found!");
+            MessageBox.Show(@"No video devices found!");
             return;
         }
 
@@ -64,17 +64,19 @@ public partial class Form1 : Form
         _videoSource.Start();
         
         if(pictureBox1.Image == null) return;
-        textBox1.Text = await _coach.GetPoseEvaluation((Bitmap)pictureBox1.Image);
     }
 
 
-    private void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
+    private async void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
         // Get the current frame and display it in the PictureBox
         var bitmap = (Bitmap)eventArgs.Frame.Clone();
         pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
 
         pictureBox1.Image = bitmap;
+        
+        textBox1.Text = await _coach.GetPoseEvaluation((Bitmap)pictureBox1.Image);
+
 
         _videoSource.NewFrame -= VideoSource_NewFrame;
 
